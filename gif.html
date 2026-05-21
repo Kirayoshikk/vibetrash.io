@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GIF Converter</title>
+  <style>
+    :root {
+      --bg: rgba(10, 12, 20, 0.72);
+      --card: rgba(17, 24, 39, 0.58);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --muted: rgba(248, 250, 252, 0.75);
+      --accent: #60a5fa;
+      --accent-2: #a78bfa;
+      --success: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow: hidden;
+      position: relative;
+      background:
+        linear-gradient(135deg, rgba(8, 15, 32, 0.76), rgba(15, 23, 42, 0.72)),
+        url('image(3).png') center center / cover no-repeat fixed;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.22), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.22), transparent 30%);
+      pointer-events: none;
+    }
+
+    .shell {
+      position: relative;
+      width: min(920px, 100%);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      align-items: stretch;
+      z-index: 1;
+    }
+
+    .hero,
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 28px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 620px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 20px rgba(96, 165, 250, 0.6);
+    }
+
+    h1 {
+      font-size: clamp(38px, 5vw, 62px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 52ch;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat b {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .panel {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      justify-content: center;
+    }
+
+    .panel h2 {
+      font-size: 26px;
+      margin-bottom: 2px;
+    }
+
+    .panel .sub {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+
+    .upload-box {
+      position: relative;
+      border: 1.5px dashed rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 22px;
+      padding: 26px;
+      text-align: center;
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+
+    .upload-box:hover {
+      transform: translateY(-2px);
+      border-color: rgba(96, 165, 250, 0.65);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .upload-box strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .upload-box span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+    }
+
+    button,
+    .download-link {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 15px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: 0.25s ease;
+    }
+
+    button {
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 14px 30px rgba(96, 165, 250, 0.25);
+    }
+
+    button:hover,
+    .download-link:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .download-link {
+      display: inline-block;
+      color: white;
+      background: linear-gradient(135deg, #16a34a, var(--success));
+      box-shadow: 0 14px 30px rgba(34, 197, 94, 0.18);
+      margin-top: 8px;
+    }
+
+    .result {
+      display: grid;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .preview {
+      width: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+    }
+
+    .preview img,
+    .preview video {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        overflow-y: auto;
+      }
+
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> Fast GIF converter</div>
+        <h1>Загрузи файл и получи GIF за пару секунд</h1>
+        <p>
+          Стильное оформление с вашей фотографией на фоне. Подходит для mp4, jpg, jpeg, png и других медиа-файлов.
+          Интерфейс сделан в современном glassmorphism-стиле.
+        </p>
+
+        <div class="stats">
+          <div class="stat">
+            <b>MP4 → GIF</b>
+            <span>Конвертация видео в анимацию</span>
+          </div>
+          <div class="stat">
+            <b>JPG / PNG</b>
+            <span>Изображение тоже можно обработать</span>
+          </div>
+          <div class="stat">
+            <b>Красивый UI</b>
+            <span>Фон, стекло и мягкие тени</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div>
+        <h2>Конвертер в GIF</h2>
+        <p class="sub">Выберите файл, запустите конвертацию и скачайте готовый результат.</p>
+      </div>
+
+      <label class="upload-box">
+        <strong>Выберите файл</strong>
+        <span>Видео, фото и другие поддерживаемые форматы</span>
+        <input type="file" id="fileInput" accept="video/*,image/*" />
+      </label>
+
+      <div class="actions">
+        <button onclick="convertToGif()">Конвертировать в GIF</button>
+      </div>
+
+      <div class="result" id="result">
+        <div class="preview">
+          <span class="hint">Здесь появится предпросмотр и ссылка на скачивание</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const result = document.getElementById('result');
+
+    function renderLoading() {
+      result.innerHTML = `
+        <div class="preview"><span class="hint">Обработка файла...</span></div>
+      `;
+    }
+
+    function convertToGif() {
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Выберите файл!');
+        return;
+      }
+
+      renderLoading();
+      const fileURL = URL.createObjectURL(file);
+
+      if (file.type.includes('image')) {
+        const img = document.createElement('img');
+        img.src = fileURL;
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          const gif = new GIF({
+            workers: 2,
+            quality: 10,
+            width: canvas.width,
+            height: canvas.height
+          });
+
+          gif.addFrame(canvas, { delay: 1000 });
+
+          gif.on('finished', function(blob) {
+            const gifURL = URL.createObjectURL(blob);
+            result.innerHTML = `
+              <div class="preview"><img src="${gifURL}" alt="GIF preview"></div>
+              <a class="download-link" href="${gifURL}" download="image.gif">Скачать GIF</a>
+            `;
+          });
+
+          gif.render();
+        };
+      } else if (file.type.includes('video')) {
+        const video = document.createElement('video');
+        video.src = fileURL;
+        video.muted = true;
+        video.playsInline = true;
+
+        video.onloadeddata = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.floor(video.videoWidth / 2));
+          canvas.height = Math.max(1, Math.floor(video.videoHeight / 2));
+
+          const ctx = canvas.getContext('2d');
+          const gif = new GIF({
+            workers: 2,
+            quality: 10,
+            width: canvas.width,
+            height: canvas.height
+          });
+
+          const duration = Math.min(video.duration || 0, 5);
+          let currentTime = 0;
+
+          function captureFrame() {
+            if (currentTime >= duration) {
+              gif.render();
+              return;
+            }
+
+            video.currentTime = currentTime;
+
+            video.onseeked = () => {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              gif.addFrame(canvas, { copy: true, delay: 200 });
+              currentTime += 0.2;
+              captureFrame();
+            };
+          }
+
+          gif.on('finished', function(blob) {
+            const gifURL = URL.createObjectURL(blob);
+            result.innerHTML = `
+              <div class="preview"><img src="${gifURL}" alt="GIF preview"></div>
+              <a class="download-link" href="${gifURL}" download="video.gif">Скачать GIF</a>
+            `;
+          });
+
+          captureFrame();
+        };
+      } else {
+        result.innerHTML = `
+          <div class="preview"><span class="hint">Формат не поддерживается</span></div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
